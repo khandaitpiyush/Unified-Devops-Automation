@@ -18,4 +18,21 @@ export const deploymentService = {
     }
     return apiClient.get<DeploymentItem[]>(`/repositories/${repositoryId}/deployments`);
   },
+
+  async scaleDeployment(deploymentId: string, replicas: number): Promise<ApiResponse<DeploymentItem>> {
+    if (apiClient.isMockEnabled()) {
+      const data = await mockAdapter.scaleDeployment(deploymentId, replicas);
+      return { data, success: true, isMockData: true };
+    }
+    return apiClient.patch<DeploymentItem>(`/deployments/${deploymentId}/scale`, { replicas });
+  },
+
+  async rollbackDeployment(deploymentId: string): Promise<ApiResponse<DeploymentItem>> {
+    if (apiClient.isMockEnabled()) {
+      const data = await mockAdapter.rollbackDeployment(deploymentId);
+      return { data, success: true, isMockData: true };
+    }
+    return apiClient.post<DeploymentItem>(`/deployments/${deploymentId}/rollback`, {});
+  },
 };
+

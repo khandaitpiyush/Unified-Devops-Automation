@@ -19,4 +19,13 @@ export const securityService = {
     }
     return apiClient.get<Record<string, SecurityOverview>>('/security');
   },
+
+  async triggerSecurityScan(repositoryId?: string): Promise<ApiResponse<SecurityOverview>> {
+    if (apiClient.isMockEnabled()) {
+      const data = await mockAdapter.triggerSecurityScan(repositoryId);
+      return { data, success: true, isMockData: true };
+    }
+    const endpoint = repositoryId ? `/security/${repositoryId}/scan` : '/security/scan';
+    return apiClient.post<SecurityOverview>(endpoint, {});
+  },
 };

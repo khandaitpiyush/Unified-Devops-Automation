@@ -278,6 +278,48 @@ export const mockAdapter = {
     return deployments.filter((d) => d.repositoryId === repoId);
   },
 
+  async scaleDeployment(deploymentId: string, desiredReplicas: number): Promise<DeploymentItem> {
+    const dep = deployments.find((d) => d.id === deploymentId);
+    if (!dep) throw new Error('Deployment not found');
+    dep.replicas.desired = desiredReplicas;
+    dep.replicas.ready = desiredReplicas;
+    dep.events = [
+      {
+        timestamp: new Date().toISOString(),
+        type: 'Normal',
+        reason: 'ScalingReplicaSet',
+        message: `Scaled deployment ${dep.repositoryName} to ${desiredReplicas} replicas`,
+      },
+      ...(dep.events || []),
+    ];
+    return { ...dep };
+  },
+
+  async rollbackDeployment(deploymentId: string): Promise<DeploymentItem> {
+    const dep = deployments.find((d) => d.id === deploymentId);
+    if (!dep) throw new Error('Deployment not found');
+    const prevTag = dep.imageTag;
+    dep.imageTag = `v${Math.max(1, parseInt(dep.imageTag.replace(/\D/g, '') || '1') - 1)}.0.0-rollback`;
+    dep.events = [
+      {
+        timestamp: new Date().toISOString(),
+        type: 'Normal',
+        reason: 'RollbackTriggered',
+        message: `Rollback triggered from ${prevTag} to stable release ${dep.imageTag}`,
+      },
+      ...(dep.events || []),
+    ];
+    return { ...dep };
+  },
+
+  async triggerSecurityScan(repoId?: string): Promise<SecurityOverview> {
+    const key = repoId || 'repo-unified-devops';
+    const existing = securityData[key] || mockSecurityData['repo-unified-devops'];
+    existing.lastScanDate = new Date().toISOString();
+    existing.scanStatus = 'scanned';
+    return { ...existing };
+  },
+
   // Infrastructure
   async getInfrastructure(): Promise<InfrastructureItem[]> {
     return [...infrastructure];
