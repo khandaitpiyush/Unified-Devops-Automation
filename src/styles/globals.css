@@ -1,0 +1,52 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-white text-slate-900 font-sans antialiased;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    letter-spacing: -0.011em;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    letter-spacing: -0.022em;
+  }
+
+  /* Compact developer scrollbars */
+  ::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #E2E8F0;
+    border-radius: 4px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #CBD5E1;
+  }
+}
+
+/* Professional data table styling */
+.data-table th {
+  @apply text-[11px] font-semibold text-slate-500 uppercase tracking-wider py-2.5 px-4 bg-surface-subtle border-b border-border select-none;
+}
+.data-table td {
+  @apply text-xs py-3 px-4 border-b border-border/70 text-slate-800;
+}
+.data-table tr:hover td {
+  @apply bg-surface-subtle/60;
+}
+
+/* Standardized focus styling */
+.focus-ring {
+  @apply focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-600 transition-all;
+}
+
+/* Code block terminal font rendering */
+pre, code {
+  font-feature-settings: "liga" 0;
+}
