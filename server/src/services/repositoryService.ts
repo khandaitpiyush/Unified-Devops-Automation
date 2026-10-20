@@ -9,7 +9,7 @@ export class RepositoryService {
   public static async getAll(): Promise<Repository[]> {
     if (!this.syncedWithGitHub && process.env.GITHUB_TOKEN) {
       try {
-        const ghRepos = await GitHubService.getUserRepositories(15);
+        const ghRepos = await GitHubService.getUserRepositories(50);
         ghRepos.forEach((gh) => {
           const exists = store.repositories.some((r) => r.fullName.toLowerCase() === gh.full_name.toLowerCase());
           if (!exists) {

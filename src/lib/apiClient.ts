@@ -1,7 +1,7 @@
 import { ApiResponse } from '@/types';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
-const USE_MOCK_DATA = import.meta.env.VITE_USE_MOCK_DATA !== 'false'; // Default to mock mode for preview
+const USE_MOCK_DATA = import.meta.env.VITE_USE_MOCK_DATA === 'true'; // Real backend connected by default (mock mode disabled)
 
 export class ApiError extends Error {
   status: number;
