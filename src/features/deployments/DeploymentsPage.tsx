@@ -129,7 +129,22 @@ export const DeploymentsPage: React.FC = () => {
                     </div>
                   </td>
                   <td className="font-mono text-xs text-slate-700">{dep.namespace}</td>
-                  <td className="font-mono text-[11px] text-slate-500">{dep.imageTag}</td>
+                  <td className="font-mono text-[11px] text-slate-600">
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <span className="font-semibold text-slate-800">{dep.imageTag}</span>
+                      {dep.imageTag.startsWith('ghcr.io') && (
+                        <a
+                          href={`https://github.com/${dep.imageTag.split('/')[1] || 'khandaitpiyush'}?tab=packages`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          title="View in GitHub Container Registry (GHCR)"
+                          className="text-primary-600 hover:text-primary-800 inline-flex items-center gap-0.5 text-[10px] bg-primary-50 px-1 py-0.5 rounded border border-primary-200"
+                        >
+                          GHCR <ExternalLink className="w-2.5 h-2.5" />
+                        </a>
+                      )}
+                    </div>
+                  </td>
                   <td>
                     <span className="font-mono text-xs font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
                       {dep.replicas.ready} / {dep.replicas.desired} Ready

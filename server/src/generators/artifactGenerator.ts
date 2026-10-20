@@ -355,7 +355,86 @@ resource "azurerm_kubernetes_cluster" "aks" {
   identity {
     type = "SystemAssigned"
   }
-}`,
+}
+`,
+    });
+
+    // 6. .github/workflows/devops-ghcr-deploy.yml (Cloud Docker Build & GHCR Push)
+    artifacts.push({
+      id: `art-ghcr-workflow-${blueprint.id}`,
+      blueprintId: blueprint.id,
+      blueprintVersion: blueprint.version,
+      repositoryId: blueprint.repositoryId,
+      filename: '.github/workflows/devops-ghcr-deploy.yml',
+      fileType: 'github_workflow',
+      language: 'yaml',
+      status: 'generated',
+      updatedAt: new Date().toISOString(),
+      content: `# Unified DevOps Automation — Cloud GHCR Build & Deploy Pipeline
+# Zero-RAM Cloud Execution on GitHub Cloud Runners
+name: Autonomous DevOps GHCR Build & Deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: 'Custom image tag (defaults to build number)'
+        required: false
+        default: 'latest'
+  push:
+    branches: [ main, piyushmain ]
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build-and-push-ghcr:
+    name: Build Multi-Stage Docker & Push to GHCR
+    runs-on: ubuntu-latest
+    steps:
+      - name: 1. Checkout Repository Code
+        uses: actions/checkout@v4
+
+      - name: 2. Set up Docker Buildx (Layer Caching)
+        uses: docker/setup-buildx-action@v3
+
+      - name: 3. Authenticate with GitHub Container Registry (GHCR)
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: \${{ github.actor }}
+          password: \${{ secrets.GITHUB_TOKEN }}
+
+      - name: 4. Extract Docker Metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/\${{ github.repository }}
+          tags: |
+            type=raw,value=latest
+            type=raw,value=v\${{ github.run_number }}
+            type=sha,format=short
+
+      - name: 5. Build and Publish Image to GHCR
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: \${{ steps.meta.outputs.tags }}
+          labels: \${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: 6. Record Telemetry & GHCR Image Digest
+        run: |
+          echo "======================================================="
+          echo "🚀 Container Image Successfully Published to GHCR!"
+          echo "📦 Target: ghcr.io/\${{ github.repository }}:v\${{ github.run_number }}"
+          echo "🏷️ Latest: ghcr.io/\${{ github.repository }}:latest"
+          echo "🌐 Registry: https://github.com/\${{ github.repository_owner }}?tab=packages"
+          echo "======================================================="`,
     });
 
     return artifacts;

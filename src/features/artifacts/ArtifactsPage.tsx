@@ -60,15 +60,19 @@ export const ArtifactsPage: React.FC = () => {
   // Group files logically for developer navigation
   const categories = [
     {
-      name: 'CI/CD Pipelines',
+      name: 'CI/CD Pipelines (Jenkins)',
       files: artifacts.filter((a) => a.fileType === 'jenkinsfile'),
     },
     {
-      name: 'Container Hardening',
+      name: 'Cloud Build & Registry (GHCR)',
+      files: artifacts.filter((a) => a.fileType === 'github_workflow'),
+    },
+    {
+      name: 'Container Hardening (Docker)',
       files: artifacts.filter((a) => a.fileType === 'dockerfile' || a.fileType === 'dockerignore'),
     },
     {
-      name: 'Kubernetes Manifests',
+      name: 'Kubernetes Workloads',
       files: artifacts.filter((a) => a.fileType.startsWith('k8s_')),
     },
     {

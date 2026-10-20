@@ -40,18 +40,68 @@ export class CloudDeployEngine {
       artifacts = ArtifactService.regenerate(bp.id);
     }
 
-    // 3. If requested, commit Dockerfile to real GitHub repository
-    if (options.commitArtifactsToGitHub && process.env.GITHUB_TOKEN) {
+    // 3. Commit Dockerfile & GHCR Workflow directly to real GitHub repository if token exists
+    const shouldCommit = options.commitArtifactsToGitHub ?? true;
+    if (shouldCommit && process.env.GITHUB_TOKEN && repo.owner && repo.name) {
       const dockerfile = artifacts.find((a) => a.fileType === 'dockerfile');
-      if (dockerfile && repo.owner && repo.name) {
+      const ghcrWorkflow = artifacts.find((a) => a.fileType === 'github_workflow');
+      const jenkinsfile = artifacts.find((a) => a.fileType === 'jenkinsfile');
+      const k8sDep = artifacts.find((a) => a.fileType === 'k8s_deployment');
+
+      if (dockerfile) {
         await GitHubService.commitFile(
           repo.owner,
           repo.name,
           'Dockerfile',
           dockerfile.content,
-          'ci(devops): generate production multi-stage Dockerfile via Unified DevOps Platform',
+          'ci(docker): generate production multi-stage Dockerfile via Unified DevOps Platform',
           branch
         );
+      }
+
+      if (ghcrWorkflow) {
+        await GitHubService.commitFile(
+          repo.owner,
+          repo.name,
+          '.github/workflows/devops-ghcr-deploy.yml',
+          ghcrWorkflow.content,
+          'ci(ghcr): add autonomous zero-RAM container build & GHCR publishing workflow',
+          branch
+        );
+      }
+
+      if (jenkinsfile) {
+        await GitHubService.commitFile(
+          repo.owner,
+          repo.name,
+          'Jenkinsfile',
+          jenkinsfile.content,
+          'ci(jenkins): generate 9-stage declarative pipeline definition',
+          branch
+        );
+      }
+
+      if (k8sDep) {
+        await GitHubService.commitFile(
+          repo.owner,
+          repo.name,
+          'k8s/deployment.yaml',
+          k8sDep.content,
+          'k8s(deploy): generate production Kubernetes manifests',
+          branch
+        );
+      }
+
+      // Trigger Cloud Runner on GitHub Actions to build Docker and push to GHCR
+      try {
+        await GitHubService.triggerWorkflowDispatch(
+          repo.owner,
+          repo.name,
+          'devops-ghcr-deploy.yml',
+          branch
+        );
+      } catch (dispatchErr: any) {
+        console.warn('GitHub workflow dispatch notice:', dispatchErr.message);
       }
     }
 
@@ -76,7 +126,10 @@ export class CloudDeployEngine {
         blueprintVersion: bp.version,
         pipelineId: pipeline.id,
         replicas: { desired: options.replicas || 3, ready: 0 },
-        endpoints: [`https://${repo.name}.platform.internal`],
+        endpoints: [
+          `https://${repo.name}.platform.internal`,
+          `https://github.com/${repo.owner}?tab=packages`,
+        ],
         events: [
           {
             timestamp: new Date().toISOString(),

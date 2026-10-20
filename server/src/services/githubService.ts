@@ -166,4 +166,54 @@ export class GitHubService {
       return { success: false };
     }
   }
+
+  // 7. Trigger a GitHub Actions Workflow in the cloud via workflow_dispatch
+  public static async triggerWorkflowDispatch(
+    owner: string,
+    repo: string,
+    workflowFileName: string,
+    ref = 'main'
+  ): Promise<{ success: boolean; message: string }> {
+    try {
+      const res = await fetch(
+        `https://api.github.com/repos/${owner}/${repo}/actions/workflows/${workflowFileName}/dispatches`,
+        {
+          method: 'POST',
+          headers: {
+            ...this.getHeaders(),
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ ref }),
+        }
+      );
+
+      if (!res.ok) {
+        const text = await res.text();
+        return { success: false, message: `Workflow dispatch status ${res.status}: ${text}` };
+      }
+
+      return { success: true, message: `Successfully dispatched ${workflowFileName} on branch ${ref}` };
+    } catch (error: any) {
+      return { success: false, message: error.message };
+    }
+  }
+
+  // 8. Get recent workflow runs from GitHub Actions
+  public static async getWorkflowRuns(
+    owner: string,
+    repo: string,
+    perPage = 5
+  ): Promise<any[]> {
+    try {
+      const res = await fetch(
+        `https://api.github.com/repos/${owner}/${repo}/actions/runs?per_page=${perPage}`,
+        { headers: this.getHeaders() }
+      );
+      if (!res.ok) return [];
+      const data = (await res.json()) as { workflow_runs?: any[] };
+      return data.workflow_runs || [];
+    } catch {
+      return [];
+    }
+  }
 }

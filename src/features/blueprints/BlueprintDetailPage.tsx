@@ -86,9 +86,11 @@ export const BlueprintDetailPage: React.FC = () => {
   const handleDeploy = async () => {
     try {
       setIsDeploying(true);
-      const res = await deploymentService.deployWorkload(blueprint.repositoryId);
+      const res = await deploymentService.deployWorkload(blueprint.repositoryId, {
+        commitArtifactsToGitHub: true,
+      });
       toast.success(
-        'Deployment Initiated',
+        'Cloud Deployment & GHCR Initiated',
         `Rollout triggered for ${blueprint.repositoryName}. Pipeline build #${res.data.pipeline.buildNumber} active.`
       );
       navigate('/app/deployments');
@@ -155,7 +157,7 @@ export const BlueprintDetailPage: React.FC = () => {
                 onClick={handleDeploy}
                 isLoading={isDeploying}
               >
-                Deploy to Kubernetes
+                Deploy to Cloud & GHCR
               </Button>
             </div>
           )}

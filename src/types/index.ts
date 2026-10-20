@@ -153,6 +153,7 @@ export interface GeneratedArtifact {
     | 'jenkinsfile'
     | 'dockerfile'
     | 'dockerignore'
+    | 'github_workflow'
     | 'k8s_deployment'
     | 'k8s_service'
     | 'k8s_configmap'
