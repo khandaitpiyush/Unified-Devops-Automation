@@ -5,6 +5,7 @@ import { GitHubService } from './githubService.js';
 import { BlueprintService } from './blueprintService.js';
 import { ArtifactService } from './artifactService.js';
 import { RepositoryService } from './repositoryService.js';
+import { RenderService } from './renderService.js';
 
 export interface CloudDeployOptions {
   branch?: string;
@@ -113,9 +114,29 @@ export class CloudDeployEngine {
     // 4. Trigger autonomous 9-stage pipeline
     const pipeline = PipelineService.trigger(repositoryId, branch, 'manual');
 
-    // 5. Register or update live Kubernetes Deployment
+    // 5. If RENDER_API_KEY is configured, trigger 1-click cloud container provisioning
+    let liveRenderUrl: string | null = null;
+    if (process.env.RENDER_API_KEY) {
+      try {
+        const ghcrTag = `ghcr.io/${repo.owner.toLowerCase()}/${repo.name.toLowerCase()}:latest`;
+        const renderRes = await RenderService.deployGHCRImage(repo.name, ghcrTag, bp.config.app.port || 80);
+        if (renderRes.success && renderRes.liveUrl) {
+          liveRenderUrl = renderRes.liveUrl;
+        }
+      } catch (rErr: any) {
+        console.warn('Render 1-click deploy notice:', rErr.message);
+      }
+    }
+
+    // 6. Register or update live Kubernetes Deployment
     let deployment = store.deployments.find((d) => d.repositoryId === repositoryId);
     const imageTag = `ghcr.io/${repo.owner}/${repo.name}:v${pipeline.buildNumber}.0.0`;
+
+    const endpointsList = [
+      ...(liveRenderUrl ? [liveRenderUrl] : []),
+      `https://${repo.name}.platform.internal`,
+      `https://github.com/${repo.owner}?tab=packages`,
+    ];
 
     if (!deployment) {
       deployment = {
@@ -131,11 +152,18 @@ export class CloudDeployEngine {
         blueprintVersion: bp.version,
         pipelineId: pipeline.id,
         replicas: { desired: options.replicas || 3, ready: 0 },
-        endpoints: [
-          `https://${repo.name}.platform.internal`,
-          `https://github.com/${repo.owner}?tab=packages`,
-        ],
+        endpoints: endpointsList,
         events: [
+          ...(liveRenderUrl
+            ? [
+                {
+                  timestamp: new Date().toISOString(),
+                  type: 'Normal' as const,
+                  reason: 'RenderServiceProvisioned',
+                  message: `Render Web Service provisioned live at ${liveRenderUrl}`,
+                },
+              ]
+            : []),
           {
             timestamp: new Date().toISOString(),
             type: 'Normal',
@@ -150,6 +178,15 @@ export class CloudDeployEngine {
       deployment.commitSha = pipeline.commitSha;
       deployment.status = 'deploying';
       deployment.pipelineId = pipeline.id;
+      deployment.endpoints = endpointsList;
+      if (liveRenderUrl) {
+        deployment.events.unshift({
+          timestamp: new Date().toISOString(),
+          type: 'Normal',
+          reason: 'RenderServiceProvisioned',
+          message: `Render Web Service provisioned live at ${liveRenderUrl}`,
+        });
+      }
       deployment.events.unshift({
         timestamp: new Date().toISOString(),
         type: 'Normal',

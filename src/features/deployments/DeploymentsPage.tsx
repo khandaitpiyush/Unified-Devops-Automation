@@ -160,6 +160,22 @@ export const DeploymentsPage: React.FC = () => {
                   </td>
                   <td className="text-right">
                     <div className="flex items-center justify-end gap-1.5">
+                      {dep.endpoints && dep.endpoints.find((ep) => ep.includes('.onrender.com')) && (
+                        <a
+                          href={dep.endpoints.find((ep) => ep.includes('.onrender.com'))}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          <Button
+                            variant="primary"
+                            size="xs"
+                            leftIcon={<ExternalLink className="w-3 h-3" />}
+                            className="bg-emerald-600 hover:bg-emerald-700 text-white font-medium"
+                          >
+                            Live App
+                          </Button>
+                        </a>
+                      )}
                       <Button
                         variant="outline"
                         size="xs"
