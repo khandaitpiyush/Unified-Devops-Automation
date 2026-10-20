@@ -1,0 +1,30 @@
+import { Router } from 'express';
+import { authRouter } from './authRoutes.js';
+import { repositoryRouter } from './repositoryRoutes.js';
+import { blueprintRouter } from './blueprintRoutes.js';
+import { artifactRouter } from './artifactRoutes.js';
+import { pipelineRouter } from './pipelineRoutes.js';
+import { deploymentRouter } from './deploymentRoutes.js';
+import { securityRouter } from './securityRoutes.js';
+import { infrastructureRouter } from './infrastructureRoutes.js';
+import { observabilityRouter } from './observabilityRoutes.js';
+import { integrationRouter } from './integrationRoutes.js';
+import { settingsRouter } from './settingsRoutes.js';
+import { webhookRouter } from './webhookRoutes.js';
+import { logsRouter } from './logsRoutes.js';
+
+export const apiRouter = Router();
+
+apiRouter.use('/auth', authRouter);
+apiRouter.use('/repositories', repositoryRouter);
+apiRouter.use('/blueprints', blueprintRouter);
+apiRouter.use('/artifacts', artifactRouter);
+apiRouter.use('/pipelines', pipelineRouter);
+apiRouter.use('/deployments', deploymentRouter);
+apiRouter.use('/security', securityRouter);
+apiRouter.use('/infrastructure', infrastructureRouter);
+apiRouter.use('/observability', observabilityRouter);
+apiRouter.use('/integrations', integrationRouter);
+apiRouter.use('/settings', settingsRouter);
+apiRouter.use('/webhooks', webhookRouter);
+apiRouter.use('/logs', logsRouter);
