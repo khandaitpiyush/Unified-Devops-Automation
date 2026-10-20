@@ -4,6 +4,7 @@ import { PipelineService } from './pipelineService.js';
 import { GitHubService } from './githubService.js';
 import { BlueprintService } from './blueprintService.js';
 import { ArtifactService } from './artifactService.js';
+import { RepositoryService } from './repositoryService.js';
 
 export interface CloudDeployOptions {
   branch?: string;
@@ -16,7 +17,11 @@ export class CloudDeployEngine {
     repositoryId: string,
     options: CloudDeployOptions = {}
   ): Promise<{ pipeline: PipelineExecution; deployment: DeploymentItem }> {
-    const repo = store.repositories.find((r) => r.id === repositoryId);
+    let repo = store.repositories.find((r) => r.id === repositoryId);
+    if (!repo) {
+      await RepositoryService.getAll();
+      repo = store.repositories.find((r) => r.id === repositoryId);
+    }
     if (!repo) {
       throw new Error(`Repository ${repositoryId} not found`);
     }

@@ -2,6 +2,7 @@ import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import { config } from './config/env.js';
 import { apiRouter } from './routes/index.js';
+import { RepositoryService } from './services/repositoryService.js';
 
 const app = express();
 
@@ -73,7 +74,7 @@ app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
 });
 
 // Start Server
-const server = app.listen(config.port, () => {
+const server = app.listen(config.port, async () => {
   console.log(`=======================================================`);
   console.log(`🚀 Unified DevOps Automation API Server Running!`);
   console.log(`📡 URL: http://localhost:${config.port}`);
@@ -81,6 +82,14 @@ const server = app.listen(config.port, () => {
   console.log(`🩺 Health: http://localhost:${config.port}/health`);
   console.log(`⚡ Mode: ${config.nodeEnv}`);
   console.log(`=======================================================`);
+
+  // Pre-load and sync repositories from GitHub API on server boot
+  try {
+    const repos = await RepositoryService.getAll();
+    console.log(`📦 Loaded ${repos.length} live repositories from GitHub API.`);
+  } catch (err: any) {
+    console.warn('Initial GitHub repository sync skipped:', err.message);
+  }
 });
 
 // Graceful Shutdown

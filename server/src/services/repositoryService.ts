@@ -41,8 +41,13 @@ export class RepositoryService {
     return store.repositories;
   }
 
-  public static getById(id: string): Repository | null {
-    return store.repositories.find((r) => r.id === id) || null;
+  public static async getById(id: string): Promise<Repository | null> {
+    let repo = store.repositories.find((r) => r.id === id);
+    if (!repo) {
+      await this.getAll();
+      repo = store.repositories.find((r) => r.id === id);
+    }
+    return repo || null;
   }
 
   public static connect(data: Partial<Repository>): Repository {

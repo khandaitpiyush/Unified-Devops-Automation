@@ -26,9 +26,9 @@ repositoryRouter.post('/connect', (req: Request, res: Response) => {
 });
 
 // GET repository by ID
-repositoryRouter.get('/:id', (req: Request, res: Response) => {
+repositoryRouter.get('/:id', async (req: Request, res: Response) => {
   const id = paramStr(req.params.id);
-  const repo = RepositoryService.getById(id);
+  const repo = await RepositoryService.getById(id);
   if (!repo) {
     return res.status(404).json({ success: false, message: 'Repository not found' });
   }
