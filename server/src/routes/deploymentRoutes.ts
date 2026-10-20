@@ -1,5 +1,6 @@
 import { Router, Request, Response } from 'express';
 import { DeploymentService } from '../services/deploymentService.js';
+import { CloudDeployEngine } from '../services/cloudDeployEngine.js';
 import { paramStr } from '../utils/params.js';
 
 export const deploymentRouter = Router();
@@ -7,6 +8,28 @@ export const deploymentRouter = Router();
 deploymentRouter.get('/', (_req: Request, res: Response) => {
   const deployments = DeploymentService.getAll();
   res.json({ data: deployments, success: true });
+});
+
+// POST /api/deployments/deploy - Autonomous end-to-end deploy
+deploymentRouter.post('/deploy', async (req: Request, res: Response) => {
+  try {
+    const { repositoryId, branch, replicas, commitArtifactsToGitHub } = req.body;
+    if (!repositoryId) {
+      return res.status(400).json({ success: false, message: 'repositoryId is required' });
+    }
+    const result = await CloudDeployEngine.deploy(repositoryId, {
+      branch,
+      replicas,
+      commitArtifactsToGitHub,
+    });
+    res.status(201).json({
+      data: result,
+      success: true,
+      message: `Autonomous cloud deployment initiated for ${result.deployment.repositoryName}`,
+    });
+  } catch (error: any) {
+    res.status(400).json({ success: false, message: error.message });
+  }
 });
 
 deploymentRouter.patch('/:id/scale', (req: Request, res: Response) => {

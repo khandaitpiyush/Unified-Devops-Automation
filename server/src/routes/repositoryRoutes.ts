@@ -10,8 +10,8 @@ import { paramStr } from '../utils/params.js';
 export const repositoryRouter = Router();
 
 // GET all repositories
-repositoryRouter.get('/', (_req: Request, res: Response) => {
-  const repos = RepositoryService.getAll();
+repositoryRouter.get('/', async (_req: Request, res: Response) => {
+  const repos = await RepositoryService.getAll();
   res.json({ data: repos, success: true });
 });
 

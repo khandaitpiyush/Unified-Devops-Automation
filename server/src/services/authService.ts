@@ -1,9 +1,25 @@
 import { store } from '../store/dataStore.js';
 import { UserProfile } from '../types/index.js';
 import { config } from '../config/env.js';
+import { GitHubService } from './githubService.js';
 
 export class AuthService {
-  public static getCurrentUser(): UserProfile {
+  public static async getCurrentUser(): Promise<UserProfile> {
+    try {
+      if (process.env.GITHUB_TOKEN) {
+        const ghUser = await GitHubService.getAuthenticatedUser();
+        return {
+          id: `usr-${ghUser.id}`,
+          name: ghUser.name || ghUser.login,
+          email: ghUser.email || `${ghUser.login}@users.noreply.github.com`,
+          avatarUrl: ghUser.avatar_url,
+          role: 'Platform Lead',
+          githubUsername: ghUser.login,
+        };
+      }
+    } catch (err: any) {
+      console.warn('Could not fetch GitHub user directly, using cached profile:', err.message);
+    }
     return store.currentUser;
   }
 

@@ -3,9 +3,13 @@ import { AuthService } from '../services/authService.js';
 
 export const authRouter = Router();
 
-authRouter.get('/me', (_req: Request, res: Response) => {
-  const user = AuthService.getCurrentUser();
-  res.json({ data: user, success: true });
+authRouter.get('/me', async (_req: Request, res: Response) => {
+  try {
+    const user = await AuthService.getCurrentUser();
+    res.json({ data: user, success: true });
+  } catch (error: any) {
+    res.status(500).json({ success: false, message: error.message });
+  }
 });
 
 authRouter.get('/github/authorize', (_req: Request, res: Response) => {
@@ -15,6 +19,5 @@ authRouter.get('/github/authorize', (_req: Request, res: Response) => {
 
 authRouter.get('/github/callback', (req: Request, res: Response) => {
   const code = req.query.code;
-  // In production, exchange code for access_token with GitHub OAuth
   res.redirect(`http://localhost:3000/app/repositories?oauth_success=true&code=${code || ''}`);
 });

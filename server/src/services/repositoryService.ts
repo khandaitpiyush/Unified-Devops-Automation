@@ -1,9 +1,43 @@
 import { store } from '../store/dataStore.js';
 import { Repository } from '../types/index.js';
 import { RepoAnalyzer } from '../analyzers/repoAnalyzer.js';
+import { GitHubService } from './githubService.js';
 
 export class RepositoryService {
-  public static getAll(): Repository[] {
+  private static syncedWithGitHub = false;
+
+  public static async getAll(): Promise<Repository[]> {
+    if (!this.syncedWithGitHub && process.env.GITHUB_TOKEN) {
+      try {
+        const ghRepos = await GitHubService.getUserRepositories(15);
+        ghRepos.forEach((gh) => {
+          const exists = store.repositories.some((r) => r.fullName.toLowerCase() === gh.full_name.toLowerCase());
+          if (!exists) {
+            const repo: Repository = {
+              id: `repo-${gh.id}`,
+              name: gh.name,
+              owner: gh.owner.login,
+              fullName: gh.full_name,
+              defaultBranch: gh.default_branch || 'main',
+              language: gh.language || 'TypeScript',
+              description: gh.description || `Connected repository ${gh.full_name}`,
+              visibility: gh.visibility,
+              url: gh.html_url,
+              connectionStatus: 'connected',
+              latestPipelineStatus: 'none',
+              latestDeploymentStatus: 'none',
+              blueprintStatus: 'draft',
+              lastAnalyzedAt: new Date().toISOString(),
+            };
+            store.repositories.push(repo);
+            store.analyses[repo.id] = RepoAnalyzer.analyze(repo);
+          }
+        });
+        this.syncedWithGitHub = true;
+      } catch (err: any) {
+        console.warn('GitHub repo sync skipped:', err.message);
+      }
+    }
     return store.repositories;
   }
 
