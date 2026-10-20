@@ -29,7 +29,7 @@ export const apiClient = {
   },
 
   async request<T>(endpoint: string, options: RequestOptions = {}): Promise<ApiResponse<T>> {
-    const { timeoutMs = 12000, ...fetchOptions } = options;
+    const { timeoutMs = 60000, ...fetchOptions } = options; // 60s timeout for cloud deployments & GitHub API
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 

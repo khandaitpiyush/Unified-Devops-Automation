@@ -132,8 +132,19 @@ export class GitHubService {
         { headers: this.getHeaders() }
       );
       if (existingRes.ok) {
-        const existingData = (await existingRes.json()) as { sha?: string };
+        const existingData = (await existingRes.json()) as {
+          sha?: string;
+          content?: string;
+          encoding?: string;
+        };
         sha = existingData.sha;
+        // Avoid redundant commits if file content is already up-to-date
+        if (existingData.content && existingData.encoding === 'base64') {
+          const currentContent = Buffer.from(existingData.content, 'base64').toString('utf-8');
+          if (currentContent.trim() === content.trim()) {
+            return { success: true, sha };
+          }
+        }
       }
 
       const body: Record<string, any> = {
