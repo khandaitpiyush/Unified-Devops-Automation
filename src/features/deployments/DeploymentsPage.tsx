@@ -48,14 +48,20 @@ export const DeploymentsPage: React.FC = () => {
   };
 
   const handleConfirmRollback = async () => {
+    if (!selectedDeployment) return;
     try {
       setIsRollingBack(true);
-      await new Promise((resolve) => setTimeout(resolve, 600));
-      toast.warning(
-        'Backend Action Required',
-        'Rollback request requires Kubernetes API integration with active cluster permissions.'
+      const res = await deploymentService.rollbackDeployment(selectedDeployment.id);
+      setDeployments((prev) =>
+        prev.map((d) => (d.id === selectedDeployment.id ? res.data : d))
+      );
+      toast.success(
+        'Rollback Executed',
+        `Namespace ${selectedDeployment.namespace} rolled back to revision sha-${res.data.commitSha.substring(0, 7)}.`
       );
       setIsRollbackModalOpen(false);
+    } catch (err: any) {
+      toast.error('Rollback failed', err.message || 'Unable to rollback deployment.');
     } finally {
       setIsRollingBack(false);
     }

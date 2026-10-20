@@ -34,5 +34,15 @@ export const deploymentService = {
     }
     return apiClient.post<DeploymentItem>(`/deployments/${deploymentId}/rollback`, {});
   },
+
+  async deployWorkload(
+    repositoryId: string,
+    options: { branch?: string; replicas?: number; commitArtifactsToGitHub?: boolean } = {}
+  ): Promise<ApiResponse<{ pipeline: any; deployment: DeploymentItem }>> {
+    return apiClient.post<{ pipeline: any; deployment: DeploymentItem }>('/deployments/deploy', {
+      repositoryId,
+      ...options,
+    });
+  },
 };
 

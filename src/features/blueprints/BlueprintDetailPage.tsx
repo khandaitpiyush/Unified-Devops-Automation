@@ -22,6 +22,7 @@ import { StatusPill } from '@/components/common/StatusPill';
 import { CodeViewer } from '@/components/common/CodeViewer';
 import { blueprintService } from '@/services/blueprintService';
 import { artifactService } from '@/services/artifactService';
+import { deploymentService } from '@/services/deploymentService';
 import { DevOpsBlueprint } from '@/types';
 import { BlueprintApprovalModal } from './BlueprintApprovalModal';
 import { useToast } from '@/components/common/Toast';
@@ -37,6 +38,7 @@ export const BlueprintDetailPage: React.FC = () => {
   const [isApproving, setIsApproving] = useState(false);
   const [isGeneratingArtifacts, setIsGeneratingArtifacts] = useState(false);
   const [showRawJson, setShowRawJson] = useState(false);
+  const [isDeploying, setIsDeploying] = useState(false);
 
   useEffect(() => {
     async function load() {
@@ -81,6 +83,22 @@ export const BlueprintDetailPage: React.FC = () => {
     }
   };
 
+  const handleDeploy = async () => {
+    try {
+      setIsDeploying(true);
+      const res = await deploymentService.deployWorkload(blueprint.repositoryId);
+      toast.success(
+        'Deployment Initiated',
+        `Rollout triggered for ${blueprint.repositoryName}. Pipeline build #${res.data.pipeline.buildNumber} active.`
+      );
+      navigate('/app/deployments');
+    } catch (err: any) {
+      toast.error('Deployment Failed', err.message || 'Unable to deploy workload.');
+    } finally {
+      setIsDeploying(false);
+    }
+  };
+
   return (
     <div className="space-y-5">
       {/* Scope Header */}
@@ -120,15 +138,26 @@ export const BlueprintDetailPage: React.FC = () => {
               Authorize & Approve
             </Button>
           ) : (
-            <Button
-              variant="primary"
-              size="sm"
-              leftIcon={<ScrollText className="w-3.5 h-3.5" />}
-              onClick={handleGenerateArtifacts}
-              isLoading={isGeneratingArtifacts}
-            >
-              Generate Artifacts
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                leftIcon={<ScrollText className="w-3.5 h-3.5" />}
+                onClick={handleGenerateArtifacts}
+                isLoading={isGeneratingArtifacts}
+              >
+                Inspect Artifacts
+              </Button>
+              <Button
+                variant="primary"
+                size="sm"
+                leftIcon={<Layers className="w-3.5 h-3.5" />}
+                onClick={handleDeploy}
+                isLoading={isDeploying}
+              >
+                Deploy to Kubernetes
+              </Button>
+            </div>
           )}
         </div>
       </div>

@@ -23,19 +23,40 @@ export const ConnectRepoModal: React.FC<ConnectRepoModalProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const toast = useToast();
 
+  const handleUrlChange = (url: string) => {
+    setRepoUrl(url);
+    const cleaned = url.replace(/https?:\/\/github\.com\//i, '').replace(/\.git$/i, '').trim();
+    const parts = cleaned.split('/');
+    if (parts.length >= 2 && parts[1]) {
+      setRepoName(parts[1]);
+    } else if (parts.length === 1 && parts[0] && !repoName) {
+      setRepoName(parts[0]);
+    }
+  };
+
   const handleConnect = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!repoName.trim()) {
-      toast.error('Validation error', 'Repository name is required');
+    if (!repoName.trim() && !repoUrl.trim()) {
+      toast.error('Validation error', 'Repository name or URL is required');
       return;
     }
 
     try {
       setIsLoading(true);
+      let owner = 'khandaitpiyush';
+      let name = repoName.trim();
+      const cleaned = repoUrl.replace(/https?:\/\/github\.com\//i, '').replace(/\.git$/i, '').trim();
+      const parts = cleaned.split('/');
+      if (parts.length >= 2 && parts[0] && parts[1]) {
+        owner = parts[0];
+        name = parts[1];
+      }
+
       const res = await repositoryService.connectRepository({
-        name: repoName.trim(),
-        owner: 'khandaitpiyush',
-        url: repoUrl.trim() || `https://github.com/khandaitpiyush/${repoName.trim()}`,
+        name,
+        owner,
+        fullName: `${owner}/${name}`,
+        url: repoUrl.trim() || `https://github.com/${owner}/${name}`,
         language,
         visibility: 'public',
       });
@@ -71,6 +92,19 @@ export const ConnectRepoModal: React.FC<ConnectRepoModalProps> = ({
 
         <div>
           <label className="block text-xs font-semibold text-slate-700 mb-1">
+            Repository URL
+          </label>
+          <input
+            type="url"
+            placeholder="https://github.com/khandaitpiyush/..."
+            value={repoUrl}
+            onChange={(e) => handleUrlChange(e.target.value)}
+            className="w-full px-3.5 py-2 text-xs rounded-lg border border-border focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 font-mono"
+          />
+        </div>
+
+        <div>
+          <label className="block text-xs font-semibold text-slate-700 mb-1">
             Repository Name <span className="text-red-500">*</span>
           </label>
           <input
@@ -80,19 +114,6 @@ export const ConnectRepoModal: React.FC<ConnectRepoModalProps> = ({
             value={repoName}
             onChange={(e) => setRepoName(e.target.value)}
             className="w-full px-3.5 py-2 text-xs rounded-lg border border-border focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500"
-          />
-        </div>
-
-        <div>
-          <label className="block text-xs font-semibold text-slate-700 mb-1">
-            Repository URL
-          </label>
-          <input
-            type="url"
-            placeholder="https://github.com/khandaitpiyush/..."
-            value={repoUrl}
-            onChange={(e) => setRepoUrl(e.target.value)}
-            className="w-full px-3.5 py-2 text-xs rounded-lg border border-border focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 font-mono"
           />
         </div>
 

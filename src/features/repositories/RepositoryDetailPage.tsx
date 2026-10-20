@@ -15,6 +15,7 @@ import {
   Play,
   ArrowLeft,
   Clock,
+  Sparkles,
 } from 'lucide-react';
 import { Button } from '@/components/common/Button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/common/Card';
@@ -274,38 +275,72 @@ export const RepositoryDetailPage: React.FC = () => {
       {/* Tab 3: Blueprints */}
       {activeTab === 'blueprints' && (
         <div className="space-y-3">
-          {blueprints.map((bp) => (
-            <Card key={bp.id} className="p-4 flex items-center justify-between">
+          {blueprints.length === 0 ? (
+            <Card className="p-8 text-center space-y-3">
+              <ScrollText className="w-8 h-8 text-slate-300 mx-auto" />
               <div>
-                <div className="flex items-center gap-2">
-                  <span className="font-mono text-xs font-bold text-slate-900">{bp.version}</span>
-                  <StatusPill status={bp.status} />
-                </div>
-                <p className="text-xs text-slate-500 mt-0.5">
-                  Stack: {bp.stack} • Target: {bp.deploymentTarget}
+                <p className="text-xs font-semibold text-slate-700">No blueprints generated yet</p>
+                <p className="text-[11px] text-slate-400 mt-0.5">
+                  Analyze repository structure and synthesize production CI/CD specifications.
                 </p>
               </div>
-              <Link to={`/app/blueprints/${bp.id}`}>
-                <Button variant="secondary" size="xs">
-                  Inspect Spec
+              <Link to={`/app/analyze?repoId=${repo?.id}`}>
+                <Button variant="primary" size="sm" leftIcon={<Sparkles className="w-3.5 h-3.5" />}>
+                  Generate DevOps Blueprint
                 </Button>
               </Link>
             </Card>
-          ))}
+          ) : (
+            blueprints.map((bp) => (
+              <Card key={bp.id} className="p-4 flex items-center justify-between">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="font-mono text-xs font-bold text-slate-900">{bp.version}</span>
+                    <StatusPill status={bp.status} />
+                  </div>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    Stack: {bp.stack} • Target: {bp.deploymentTarget}
+                  </p>
+                </div>
+                <Link to={`/app/blueprints/${bp.id}`}>
+                  <Button variant="secondary" size="xs">
+                    Inspect Spec
+                  </Button>
+                </Link>
+              </Card>
+            ))
+          )}
         </div>
       )}
 
       {/* Tab 4: Artifacts */}
       {activeTab === 'artifacts' && (
         <div className="space-y-4">
-          {artifacts.map((art) => (
-            <CodeViewer
-              key={art.id}
-              code={art.content}
-              filename={art.filename}
-              language={art.language}
-            />
-          ))}
+          {artifacts.length === 0 ? (
+            <Card className="p-8 text-center space-y-3">
+              <FileCode2 className="w-8 h-8 text-slate-300 mx-auto" />
+              <div>
+                <p className="text-xs font-semibold text-slate-700">No manifests generated yet</p>
+                <p className="text-[11px] text-slate-400 mt-0.5">
+                  Approve an architectural blueprint to synthesize Dockerfile, Jenkinsfile, and Kubernetes YAML.
+                </p>
+              </div>
+              <Link to={`/app/analyze?repoId=${repo?.id}`}>
+                <Button variant="primary" size="sm">
+                  Run Analyzer & Blueprint
+                </Button>
+              </Link>
+            </Card>
+          ) : (
+            artifacts.map((art) => (
+              <CodeViewer
+                key={art.id}
+                code={art.content}
+                filename={art.filename}
+                language={art.language}
+              />
+            ))
+          )}
         </div>
       )}
 

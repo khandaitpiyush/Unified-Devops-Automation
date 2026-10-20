@@ -18,6 +18,17 @@ pipelineRouter.get('/:id', (req: Request, res: Response) => {
   res.json({ data: pipeline, success: true });
 });
 
+pipelineRouter.post('/trigger', (req: Request, res: Response) => {
+  try {
+    const repositoryId = req.body.repositoryId;
+    const branch = req.body.branch || 'main';
+    const pipeline = PipelineService.trigger(repositoryId, branch, 'manual');
+    res.status(201).json({ data: pipeline, success: true, message: `Pipeline #${pipeline.buildNumber} queued.` });
+  } catch (error: any) {
+    res.status(400).json({ success: false, message: error.message });
+  }
+});
+
 pipelineRouter.post('/:id/abort', (req: Request, res: Response) => {
   const id = paramStr(req.params.id);
   const aborted = PipelineService.abort(id);
