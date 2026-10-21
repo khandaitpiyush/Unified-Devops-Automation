@@ -12,7 +12,16 @@ export class BlueprintService {
   }
 
   public static getByRepoId(repoId: string): DevOpsBlueprint[] {
-    return store.blueprints.filter((b) => b.repositoryId === repoId);
+    let bps = store.blueprints.filter((b) => b.repositoryId === repoId);
+    if (bps.length === 0) {
+      const repo = store.repositories.find((r) => r.id === repoId);
+      if (repo) {
+        const bp = this.create({ repositoryId: repo.id, repositoryName: repo.name });
+        this.approve(bp.id);
+        bps = [bp];
+      }
+    }
+    return bps;
   }
 
   public static create(data: Partial<DevOpsBlueprint>): DevOpsBlueprint {

@@ -8,7 +8,16 @@ export class ArtifactService {
   }
 
   public static getByRepoId(repoId: string): GeneratedArtifact[] {
-    return store.artifacts.filter((a) => a.repositoryId === repoId);
+    const existing = store.artifacts.filter((a) => a.repositoryId === repoId);
+    if (existing.length > 0) return existing;
+
+    const bp = store.blueprints.find((b) => b.repositoryId === repoId);
+    if (bp) {
+      const generated = ArtifactGenerator.generateAll(bp);
+      store.artifacts.push(...generated);
+      return store.artifacts.filter((a) => a.repositoryId === repoId);
+    }
+    return [];
   }
 
   public static regenerate(blueprintId: string): GeneratedArtifact[] {
