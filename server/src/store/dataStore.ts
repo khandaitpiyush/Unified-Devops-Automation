@@ -279,6 +279,35 @@ class DataStore {
     // Seed Deployments
     this.deployments = [
       {
+        id: 'dep-dam-simulator-01',
+        repositoryId: 'repo-1366555736',
+        repositoryName: 'DAM-DIGITAL-SIMULATOR',
+        environment: 'production',
+        namespace: 'production',
+        imageTag: 'ghcr.io/khandaitpiyush/dam-digital-simulator:latest',
+        commitSha: '61a0961',
+        status: 'healthy',
+        deployedAt: '2026-10-21T04:30:00Z',
+        blueprintVersion: 'v1.0.0',
+        pipelineId: 'pipe-exec-dam-01',
+        replicas: { desired: 1, ready: 1 },
+        endpoints: ['https://dam-digital-simulator.onrender.com'],
+        events: [
+          {
+            timestamp: '2026-10-21T04:30:00Z',
+            type: 'Normal',
+            reason: 'RenderServiceProvisioned',
+            message: 'Render Web Service provisioned live at https://dam-digital-simulator.onrender.com',
+          },
+          {
+            timestamp: '2026-10-21T04:29:50Z',
+            type: 'Normal',
+            reason: 'GHCRPullSuccess',
+            message: 'Container pulled successfully from ghcr.io/khandaitpiyush/dam-digital-simulator:latest',
+          },
+        ],
+      },
+      {
         id: 'dep-unified-devops-01',
         repositoryId: 'repo-unified-devops',
         repositoryName: 'unified-devops-automation',

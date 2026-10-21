@@ -10,6 +10,7 @@ export interface StatusPillProps {
     | 'queued'
     | 'aborted'
     | 'healthy'
+    | 'deployed'
     | 'degraded'
     | 'deploying'
     | 'approved'
@@ -32,11 +33,12 @@ export const StatusPill: React.FC<StatusPillProps> = ({ status, label }) => {
   switch (status) {
     case 'success':
     case 'healthy':
+    case 'deployed':
     case 'approved':
     case 'connected':
       return (
         <Badge variant="success" dot>
-          {label || (status === 'success' ? 'Success' : status === 'healthy' ? 'Healthy' : status === 'approved' ? 'Approved' : 'Connected')}
+          {label || (status === 'deployed' ? 'Deployed' : status === 'healthy' ? 'Deployed' : status === 'success' ? 'Success' : status === 'approved' ? 'Approved' : 'Connected')}
         </Badge>
       );
     case 'failed':
