@@ -36,8 +36,10 @@ export const PipelinesPage: React.FC = () => {
         pipelineService.getPipelines(),
         repositoryService.getRepositories(),
       ]);
-      setPipelines(pRes.data);
-      setRepos(rRes.data);
+      setPipelines(pRes.data || []);
+      setRepos(rRes.data || []);
+    } catch (err) {
+      console.error('Failed to load pipelines:', err);
     } finally {
       setLoading(false);
     }
@@ -47,11 +49,11 @@ export const PipelinesPage: React.FC = () => {
     fetchPipelines();
   }, []);
 
-  const filtered = pipelines.filter((pipe) => {
+  const filtered = (pipelines || []).filter((pipe) => {
     const matchesSearch =
-      pipe.repositoryName.toLowerCase().includes(search.toLowerCase()) ||
-      pipe.commitMessage.toLowerCase().includes(search.toLowerCase()) ||
-      pipe.commitSha.toLowerCase().includes(search.toLowerCase());
+      (pipe.repositoryName || '').toLowerCase().includes(search.toLowerCase()) ||
+      (pipe.commitMessage || '').toLowerCase().includes(search.toLowerCase()) ||
+      (pipe.commitSha || '').toLowerCase().includes(search.toLowerCase());
     const matchesStatus = filterStatus === 'ALL' || pipe.status === filterStatus;
     return matchesSearch && matchesStatus;
   });

@@ -51,7 +51,7 @@ export const WorkspaceRepoSelector: React.FC<WorkspaceRepoSelectorProps> = ({
               onChange={(e) => onSelectRepo(e.target.value)}
               className="appearance-none pl-9 pr-8 py-2 text-xs font-bold text-slate-900 bg-surface-subtle hover:bg-slate-100 rounded-lg border border-border cursor-pointer transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500/20"
             >
-              {repositories.map((r) => (
+              {(repositories || []).map((r) => (
                 <option key={r.id} value={r.id}>
                   {r.fullName}
                 </option>

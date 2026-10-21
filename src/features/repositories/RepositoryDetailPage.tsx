@@ -63,10 +63,12 @@ export const RepositoryDetailPage: React.FC = () => {
         ]);
         setRepo(rRes.data);
         setAnalysis(aRes.data);
-        setBlueprints(bRes.data);
-        setArtifacts(artRes.data);
-        setPipelines(pRes.data.filter((p) => p.repositoryId === repositoryId));
+        setBlueprints(bRes.data || []);
+        setArtifacts(artRes.data || []);
+        setPipelines((pRes.data || []).filter((p) => p.repositoryId === repositoryId));
         setSecurity(sRes.data);
+      } catch (err) {
+        console.error('Failed to load repository detail data:', err);
       } finally {
         setLoading(false);
       }

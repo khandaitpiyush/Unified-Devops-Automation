@@ -32,8 +32,10 @@ export const SecurityPage: React.FC = () => {
           securityService.getAllSecurity(),
           repositoryService.getRepositories(),
         ]);
-        setSecurityData(secRes.data);
-        setRepos(repoRes.data);
+        setSecurityData(secRes.data || {});
+        setRepos(repoRes.data || []);
+      } catch (err) {
+        console.error('Failed to load security data:', err);
       } finally {
         setLoading(false);
       }

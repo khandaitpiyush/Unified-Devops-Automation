@@ -40,13 +40,13 @@ export const RepositoriesPage: React.FC = () => {
     fetchRepos();
   }, []);
 
-  const filteredRepos = repositories.filter((repo) => {
+  const filteredRepos = (repositories || []).filter((repo) => {
     const matchesSearch =
-      repo.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      repo.fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      repo.description.toLowerCase().includes(searchQuery.toLowerCase());
+      (repo.name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (repo.fullName || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (repo.description || '').toLowerCase().includes(searchQuery.toLowerCase());
     const matchesLang =
-      filterLang === 'ALL' || repo.language.toLowerCase().includes(filterLang.toLowerCase());
+      filterLang === 'ALL' || (repo.language || '').toLowerCase().includes(filterLang.toLowerCase());
     return matchesSearch && matchesLang;
   });
 

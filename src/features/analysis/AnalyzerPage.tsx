@@ -38,10 +38,14 @@ export const AnalyzerPage: React.FC = () => {
 
   useEffect(() => {
     async function loadRepos() {
-      const res = await repositoryService.getRepositories();
-      setRepos(res.data);
-      if (res.data.length > 0 && !selectedRepoId) {
-        setSelectedRepoId(res.data[0].id);
+      try {
+        const res = await repositoryService.getRepositories();
+        setRepos(res.data || []);
+        if (res.data && res.data.length > 0 && !selectedRepoId) {
+          setSelectedRepoId(res.data[0].id);
+        }
+      } catch (err) {
+        console.error('Failed to load repositories in analyzer:', err);
       }
     }
     loadRepos();

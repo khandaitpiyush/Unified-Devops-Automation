@@ -69,10 +69,12 @@ export const DashboardPage: React.FC = () => {
         deploymentService.getDeployments(),
         securityService.getSecurityOverview(selectedRepoId),
       ]);
-      setRepos(reposRes.data);
-      setPipelines(pipesRes.data);
-      setDeployments(depsRes.data);
+      setRepos(reposRes.data || []);
+      setPipelines(pipesRes.data || []);
+      setDeployments(depsRes.data || []);
       setSecurity(secRes.data);
+    } catch (err) {
+      console.error('Failed to load dashboard data:', err);
     } finally {
       setLoading(false);
     }
