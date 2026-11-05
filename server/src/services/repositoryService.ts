@@ -39,7 +39,7 @@ export class RepositoryService {
   }
 
   public static async getAll(): Promise<Repository[]> {
-    if (!this.syncedWithGitHub && process.env.GITHUB_TOKEN) {
+    if (!this.syncedWithGitHub) {
       try {
         const ghRepos = await GitHubService.getUserRepositories(50);
         ghRepos.forEach((gh) => {

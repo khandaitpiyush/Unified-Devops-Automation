@@ -53,13 +53,32 @@ export class GitHubService {
     return (await res.json()) as GitHubUserProfile;
   }
 
-  // 2. Fetch authenticated user's real repositories
-  public static async getUserRepositories(perPage = 30): Promise<GitHubRepoSummary[]> {
-    const res = await fetch(`https://api.github.com/user/repos?per_page=${perPage}&sort=updated`, {
-      headers: this.getHeaders(),
+  // 2. Fetch user's real repositories (with automatic public fallback if token is invalid/expired)
+  public static async getUserRepositories(perPage = 50): Promise<GitHubRepoSummary[]> {
+    const owner = process.env.GITHUB_USERNAME || 'khandaitpiyush';
+    try {
+      if (process.env.GITHUB_TOKEN) {
+        const res = await fetch(`https://api.github.com/user/repos?per_page=${perPage}&sort=updated`, {
+          headers: this.getHeaders(),
+        });
+        if (res.ok) {
+          return (await res.json()) as GitHubRepoSummary[];
+        }
+        console.warn(`GitHub /user/repos returned ${res.status}. Falling back to public repos for ${owner}.`);
+      }
+    } catch (err: any) {
+      console.warn('Error fetching /user/repos:', err.message);
+    }
+
+    // Fallback: fetch public repos for owner without requiring authenticated token
+    const res = await fetch(`https://api.github.com/users/${owner}/repos?per_page=${perPage}&sort=updated`, {
+      headers: {
+        Accept: 'application/vnd.github.v3+json',
+        'User-Agent': 'Unified-Devops-Automation-Platform',
+      },
     });
     if (!res.ok) {
-      throw new Error(`GitHub API error fetching repositories: ${res.status} ${res.statusText}`);
+      throw new Error(`GitHub API error fetching public repos for ${owner}: ${res.status} ${res.statusText}`);
     }
     return (await res.json()) as GitHubRepoSummary[];
   }
