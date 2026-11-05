@@ -49,7 +49,23 @@ app.use((req: Request, res: Response, next: NextFunction) => {
   next();
 });
 
-// Root Health Check
+// Root Index & Health Check
+app.get('/', (_req: Request, res: Response) => {
+  res.json({
+    status: 'online',
+    service: 'Unified DevOps Automation API Engine',
+    message: 'Backend API is running live on Render.',
+    endpoints: {
+      health: '/api/health',
+      repositories: '/api/repositories',
+      blueprints: '/api/blueprints',
+      deployments: '/api/deployments',
+      pipelines: '/api/pipelines',
+    },
+    version: '1.0.0',
+  });
+});
+
 app.get('/health', (_req: Request, res: Response) => {
   res.json({
     status: 'healthy',
