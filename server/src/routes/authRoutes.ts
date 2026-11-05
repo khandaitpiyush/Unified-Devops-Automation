@@ -19,5 +19,6 @@ authRouter.get('/github/authorize', (_req: Request, res: Response) => {
 
 authRouter.get('/github/callback', (req: Request, res: Response) => {
   const code = req.query.code;
-  res.redirect(`http://localhost:3000/app/repositories?oauth_success=true&code=${code || ''}`);
+  const frontendUrl = process.env.FRONTEND_URL || process.env.CORS_ORIGIN || 'http://localhost:3000';
+  res.redirect(`${frontendUrl.replace(/\/$/, '')}/app/repositories?oauth_success=true&code=${code || ''}`);
 });
