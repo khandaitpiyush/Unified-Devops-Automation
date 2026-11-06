@@ -42,7 +42,7 @@ WORKDIR /usr/share/nginx/html
 
 # Clean default assets and inject compiled build
 RUN rm -rf ./*
-COPY --from=builder /app/dist .
+COPY --from=builder /app/${blueprint.config.build.artifactDir || 'dist'} .
 
 EXPOSE ${port}
 

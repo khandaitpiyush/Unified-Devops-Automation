@@ -40,7 +40,24 @@ export class CloudDeployEngine {
       });
     }
 
-    // 2. Ensure artifacts exist
+    // 2. Detect build output directory from repo's vite/webpack config
+    if (process.env.GITHUB_TOKEN && repo.owner && repo.name) {
+      try {
+        const detectedOutDir = await this.detectBuildOutDir(repo.owner, repo.name, branch);
+        if (detectedOutDir && detectedOutDir !== bp.config.build.artifactDir) {
+          bp.config.build.artifactDir = detectedOutDir;
+          // Regenerate artifacts with the corrected output directory
+          const regenerated = ArtifactService.regenerate(bp.id);
+          if (regenerated.length > 0) {
+            console.log(`[CloudDeploy] Detected build outDir="${detectedOutDir}" for ${repo.name}, regenerated artifacts`);
+          }
+        }
+      } catch (detectErr: any) {
+        console.warn('[CloudDeploy] Could not detect build outDir:', detectErr.message);
+      }
+    }
+
+    // 3. Ensure artifacts exist
     let artifacts = ArtifactService.getByRepoId(repositoryId);
     if (artifacts.length === 0) {
       artifacts = ArtifactService.regenerate(bp.id);
